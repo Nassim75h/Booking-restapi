@@ -1,0 +1,8 @@
+### Ddd docker container for easy development
+
+    python image , postgres image , smtp4dev image (later)
+
+### Make requirements.txt as module like were do in settings
+
+    that will give us control on  our dependencies (development dependencies)
+    in short will separate between them

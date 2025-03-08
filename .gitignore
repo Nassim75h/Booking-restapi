@@ -1,0 +1,13 @@
+venv/
+.venv/
+.idea/
+.vscode/
+.env
+backend/env/
+*/db.sqlite3
+media/
+**/__pycache__/
+**/migrations/__pycache__/
+frontend/node_modules/*
+*/staticfiles/
+*/static/

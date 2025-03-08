@@ -1,0 +1,15 @@
+FROM node:16 AS vue_build
+
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json /app/frontend/
+
+RUN npm install
+
+COPY frontend /app/frontend/
+
+#RUN npm run build
+
+CMD ["npm","frontend/run","serve"]
+
+

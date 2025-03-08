@@ -1,0 +1,26 @@
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000" # Django app will be served on port 8000
+    depends_on:
+      - vue
+    command: >
+      sh -c "python backend/manage.py migrate && python backend/manage.py runserver 0.0.0.0:8000"
+
+  vue:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "8080:8080" # Vue app will be served on port 8080
+    command: ["npm", "run", "serve"]
+    working_dir: /app
+

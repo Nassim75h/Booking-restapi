@@ -1,0 +1,139 @@
+<!-- Include Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<!-- Form with date pickers for check-in and check-out -->
+<div class="booking-container">
+  <h2>Book Your Stay</h2>
+
+  <form id="booking-form" class="booking-form">
+    <div class="form-group">
+      <label for="check-in-date">Check-in Date:</label>
+      <input type="date" id="check-in-date" name="check_in_date" required>
+    </div>
+
+    <div class="form-group">
+      <label for="check-out-date">Check-out Date:</label>
+      <input type="date" id="check-out-date" name="check_out_date" required>
+    </div>
+
+    <div class="form-group">
+      <button type="submit" id="checkout-button" class="checkout-btn">Book Now</button>
+    </div>
+  </form>
+</div>
+
+<style>
+  /* Container for the booking form */
+  .booking-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Header styling */
+  .booking-container h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  /* Form styling */
+  .booking-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #555;
+  }
+
+  input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  input[type="date"]:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .checkout-btn:hover {
+    background-color: #0056b3;
+  }
+
+  .checkout-btn:focus {
+    outline: none;
+  }
+</style>
+
+<script>
+  // Fetch the Stripe public key from your backend API
+  fetch('http://127.0.0.1:8000/api/v0/booking/public-key/')
+    .then(response => response.json())
+    .then((data) => {  
+      const stripe = Stripe(data.stripe_public_key); // Initialize Stripe with the public key
+
+      const checkoutButton = document.getElementById('checkout-button');
+      const bookingForm = document.getElementById('booking-form');
+
+      bookingForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent form submission
+
+        // Get the selected dates from the form
+        const checkInDate = document.getElementById('check-in-date').value;
+        const checkOutDate = document.getElementById('check-out-date').value;
+
+        // Make the API call to your backend to create the session
+        fetch("http://127.0.0.1:8000/api/v0/booking/properties/1/book/", {
+          method: 'POST',
+          body: JSON.stringify({
+            check_in_date: checkInDate,  // Get the check-in date from the form
+            check_out_date: checkOutDate,  // Get the check-out date from the form
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((response) => response.json())
+        .then((session) => {
+          console.log(session);
+          // Redirect to Stripe checkout
+          stripe.redirectToCheckout({ sessionId: session.sessionId });
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching Stripe public key:', error);
+    });
+</script>
