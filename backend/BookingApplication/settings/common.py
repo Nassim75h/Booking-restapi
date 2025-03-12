@@ -13,7 +13,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-     "booking",
     'rest_framework_simplejwt.token_blacklist',
     "rest_framework",
     "rest_framework_simplejwt",
@@ -22,8 +21,8 @@ INSTALLED_APPS = [
     "debug_toolbar",
     'channels',
     "adminapp",
-    "authapp"
-   
+    "authapp",
+    "booking",
 ]
 
 MIDDLEWARE = [

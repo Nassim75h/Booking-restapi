@@ -6,6 +6,7 @@
 import PropertyDetail from '@/components/Property/PropertyDetail.vue';
 import getPropertyDetails from '@/composables/fetchProperties/getPropertyDetail';
 
+
 export default {
     name :"PropertyDetailsView",
     components:{PropertyDetail},
