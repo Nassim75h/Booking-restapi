@@ -1,88 +1,111 @@
 <template>
+  <div class="property-list">
     <h1>Properties</h1>
-    <div class="property-list">
-      <div v-for="(property,index) in data" :key="index" v-if="data.length" class="post-list">
-          <SingleProperty :property="property" />
+    <div v-if="!loading">
+      <div v-if="data && data.length > 0" class="property-grid">
+        <transition-group name="property-list" tag="div" class="property-grid-inner">
+          <div v-for="property in data" :key="property.id" class="post-list">
+            <SingleProperty :property="property" />
+          </div>
+        </transition-group>
       </div>
-      <div  v-else>
-          <h2  >You dont have any listed Properties</h2>
+      <div v-else class="no-properties">
+        <h2>You don't have any listed Properties</h2>
       </div>
     </div>
+    <div v-else class="loading">
+      Loading properties...
+    </div>
+  </div>
 </template>
 
 <script>
-import getProperties from '@/composables/fetchProperties/getProperties';
-import SingleProperty from './SingleProperty.vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import SingleProperty from './SingleProperty.vue'
 
 export default {
-    name: "PropertyList",
-    components:{SingleProperty},
-    props :['data','error'],
-    setup(){
-
-
-    return  {}
+  name: "PropertyList",
+  components: { SingleProperty },
+  props: {
+    data: {
+      type: Array,
+      required: true,
+      default: () => []
     },
-
-
+    error: {
+      type: [String, Error],
+      default: null
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  }
 }
 </script>
 
 <style scoped>
 .property-list {
+  padding: 2vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.property-grid {
+  margin-top: 2vh;
+}
+
+.property-grid-inner {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   grid-auto-rows: minmax(150px, auto);
   grid-gap: 2vh;
-  background: rgba(251, 245, 240, 0.9); /* Soft background with slight transparency */
-  padding: 2vh;
-  width: 100%;
-  box-sizing: border-box;
+  background: rgba(251, 245, 240, 0.9);
   border-radius: 15px;
-  backdrop-filter: blur(10px); /* Adds a blur effect */
-  transition: all 0.3s ease-in-out;
+  backdrop-filter: blur(10px);
+  padding: 2vh;
 }
 
 .post-list {
-  background: #a7c7ff;
-  border-radius: 10px;
-  padding: 15px;
-  color:rgb(32, 43, 80);
   position: relative;
-  overflow: hidden;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
 
-/* Hover effects */
-.post-list:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+.no-properties {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Subtle pulse animation */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1);
-  }
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.2rem;
 }
 
-/* Apply animation */
-.property-list {
-  animation: pulse 3s infinite ease-in-out;
+/* Vue transition classes */
+.property-list-enter-active,
+.property-list-leave-active {
+  transition: all 0.5s ease;
 }
 
-/* Responsive design */
-@media (max-width: 300px) {
-  .property-list {
-    background: red;
-    min-width: 300px;
-    backdrop-filter: blur(5px);
+.property-list-enter-from,
+.property-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.property-list-move {
+  transition: transform 0.5s ease;
+}
+
+@media (max-width: 600px) {
+  .property-grid-inner {
+    grid-template-columns: 1fr;
   }
 }
 </style>
