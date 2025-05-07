@@ -12,22 +12,44 @@
           <div class="login__box">
             <i class="login__icon fas fa-envelope"></i>
             <div class="login__box-input">
-              <input type="text" id="email" v-model="userInfo.email" class="login__input" placeholder=" " />
+              <input 
+                type="email" 
+                id="email" 
+                v-model="userInfo.email" 
+                class="login__input" 
+                :class="{ 'error': validationErrors.email }" 
+                required
+                @blur="validateEmail"
+              />
               <label for="email" class="login__label">Email</label>
             </div>
           </div>
+          <p v-if="validationErrors.email" class="login-err">{{ validationErrors.email }}</p>
           <p v-if="error?.email" class="login-err">{{ error.email[0] }}</p>
 
           <!-- Password Input -->
           <div class="login__box">
             <i class="login__icon fas fa-lock"></i>
             <div class="login__box-input">
-              <input type="password" id="password" v-model="userInfo.password" class="login__input" placeholder=" " />
+              <input 
+                :type="showPassword ? 'text' : 'password'" 
+                id="password" 
+                v-model="userInfo.password" 
+                class="login__input" 
+                :class="{ 'error': validationErrors.password }" 
+                required
+                @blur="validatePassword"
+              />
               <label for="password" class="login__label">Password</label>
-              <i class="login__eye fas fa-eye" @click="togglePassword"></i>
+              <i 
+                class="login__eye fas" 
+                :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" 
+                @click="togglePassword"
+              ></i>
             </div>
           </div>
-          <p v-if="error?.password" class="login-err">{{ error.password[0] || error }}</p>
+          <p v-if="validationErrors.password" class="login-err">{{ validationErrors.password }}</p>
+          <p v-if="error?.password" class="login-err">{{ error.password[0] }}</p>
           <p v-if="error?.non_field_errors" class="login-err">{{ error.non_field_errors[0] }}</p>
 
           <!-- Remember Me & Forgot Password -->
@@ -40,7 +62,12 @@
           </div>
 
           <!-- Submit Button -->
-          <button class="login__button" type="submit">Sign in</button>
+          <button class="login__button" type="submit" :disabled="loading">
+            <span v-if="loading">
+              <i class="fas fa-spinner fa-spin"></i> Signing in...
+            </span>
+            <span v-else>Sign in</span>
+          </button>
 
           <!-- Register Link -->
           <p class="login__register">
@@ -153,12 +180,22 @@ img {
 
 .login__input {
   width: 100%;
-  color:  hsl(205, 100%, 84%);
-  padding-block: 0.8rem;
+  padding: 1rem;
+  border: 2px solid var(--white-color);
   background: none;
   color: var(--white-color);
-  position: relative;
-  z-index: 1;
+  transition: border 0.4s;
+}
+
+.login__input.error {
+  border-color: #dc2626;
+}
+
+.login-err {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .login__box-input {
@@ -256,11 +293,21 @@ img {
 .login__button {
   width: 100%;
   padding: 1rem;
-  border-radius: 0.5rem;
+  margin-bottom: 1rem;
   background-color: var(--white-color);
-  font-weight: var(--font-medium);
+  color: var(--black-color);
+  font-weight: 500;
   cursor: pointer;
-  margin-bottom: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.3s;
+}
+
+.login__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .login__register {
@@ -364,32 +411,86 @@ import useAxios from '@/composables/fetchCredentials/axios';
 import {ref, onMounted, computed, reactive} from 'vue';
 import {useRouter} from "vue-router";
 export default {
-  name : "LoginForm",
-  props : [],
-  setup (props) {
+  name: "LoginForm",
+  setup() {
+    const router = useRouter()
+    const loading = ref(false)
+    const showPassword = ref(false)
+    const validationErrors = reactive({
+      email: '',
+      password: ''
+    })
 
-        const router =useRouter()
+    const userInfo = reactive({
+      email: '',
+      password: ''
+    })
 
-        const userInfo = reactive({
-          email: "",
-          password: "",
-        })
-        const {login,error,isAuthenticatedComputed}= useAxios(userInfo);
-        const handleForm = async (event) => {
-          event.preventDefault()
-          await login()
-        }
-        onMounted(() =>{
-          if(isAuthenticatedComputed.value){
-            router.push({name :'home'})
-          }
-        })
-    return {
-        userInfo,
-        handleForm,
-        error,
+    const { login, error, isAuthenticatedComputed } = useAxios()
+
+    const validateEmail = () => {
+      validationErrors.email = ''
+      if (!userInfo.email) {
+        validationErrors.email = 'Email is required'
+        return false
       }
-    },
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email)) {
+        validationErrors.email = 'Please enter a valid email address'
+        return false
+      }
+      return true
+    }
+
+    const validatePassword = () => {
+      validationErrors.password = ''
+      if (!userInfo.password) {
+        validationErrors.password = 'Password is required'
+        return false
+      }
+      if (userInfo.password.length < 6) {
+        validationErrors.password = 'Password must be at least 6 characters'
+        return false
+      }
+      return true
+    }
+
+    const togglePassword = () => {
+      showPassword.value = !showPassword.value
+    }
+
+    const handleForm = async () => {
+      if (!validateEmail() || !validatePassword()) {
+        return
+      }
+
+      try {
+        loading.value = true
+        await login(userInfo)
+      } catch (err) {
+        console.error('Login error:', err)
+      } finally {
+        loading.value = false
+      }
+    }
+
+    onMounted(() => {
+      if (isAuthenticatedComputed.value) {
+        router.push({ name: 'home' })
+      }
+    })
+
+    return {
+      userInfo,
+      loading,
+      error,
+      showPassword,
+      validationErrors,
+      handleForm,
+      validateEmail,
+      validatePassword,
+      togglePassword
+    }
+  },
 }
 </script>
 

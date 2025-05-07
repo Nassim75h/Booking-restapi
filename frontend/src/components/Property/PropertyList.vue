@@ -1,6 +1,11 @@
 <template>
   <div class="property-list">
-    <h1>Properties</h1>
+    <div class="header-container">
+      <button class="back-button" @click="goBack">
+        <i class="fas fa-arrow-left"></i> Back to Home
+      </button>
+      <h1>Properties</h1>
+    </div>
     <div v-if="!loading">
       <div v-if="data && data.length > 0" class="property-grid">
         <transition-group name="property-list" tag="div" class="property-grid-inner">
@@ -22,6 +27,7 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import SingleProperty from './SingleProperty.vue'
+import { useRouter } from 'vue-router'
 
 export default {
   name: "PropertyList",
@@ -39,6 +45,17 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    }
+  },
+  setup() {
+    const router = useRouter()
+    
+    const goBack = () => {
+      router.push('/')
+    }
+
+    return {
+      goBack
     }
   }
 }
@@ -85,6 +102,30 @@ export default {
   padding: 2rem;
   color: #666;
   font-size: 1.2rem;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #609ab6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #4a7a91;
 }
 
 /* Vue transition classes */

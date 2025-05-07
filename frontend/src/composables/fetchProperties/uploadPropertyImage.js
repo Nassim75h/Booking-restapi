@@ -17,8 +17,8 @@ const uploadPropertyImage = () => {
       
       // Determine the correct endpoint based on whether it's an owned property or not
       const endpoint = isOwnedProperty 
-        ? `/booking/owned-property/${propertyId}/images/` 
-        : `/booking/properties/${propertyId}/images/`;
+        ? `booking/owned-property/${propertyId}/images/` 
+        : `booking/properties/${propertyId}/images/`;
       
       const response = await post(
         endpoint,
@@ -47,8 +47,8 @@ const uploadPropertyImage = () => {
     try {
       // Use the correct endpoint based on property type
       const endpoint = isOwnedProperty 
-        ? `/booking/owned-property/${propertyId}/images/` 
-        : `/booking/properties/${propertyId}/images/`;
+        ? `booking/owned-property/${propertyId}/images/` 
+        : `booking/properties/${propertyId}/images/`;
       
       const response = await get(endpoint);
       

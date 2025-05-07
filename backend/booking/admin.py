@@ -1,65 +1,36 @@
 from django.contrib import admin
-from . import models
-# Register your models here.
+from .models import Property, PropertyImage, Booking, Conversation, Message, WaitListEntry
 
-@admin.register(models.Booking)
-class BookingAdmin(admin.ModelAdmin):
-    list_display=['property','guest','check_in_date','check_out_date']
-
-
-@admin.register(models.Property)
+@admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display=['title','city','is_available','max_guests','user_name']
-    list_filter=['city','title','host']
+    list_display = ('title', 'host', 'price_per_night', 'address')
+    search_fields = ('title', 'address')
+    list_filter = ('host',)
 
-    #search_fields[]
-    #autocomplete_fields=[]
-    
-    list_select_related=['host']
-    def user_name(self,profile):
-        return profile.host.username
-
-@admin.register(models.WaitListEntry)
-class WishlistAdmin(admin.ModelAdmin):
-    list_display=["guest","confirmed"]
-    list_select_related=['related_property']
-
-
-@admin.register(models.PropertyImage)
+@admin.register(PropertyImage)
 class PropertyImageAdmin(admin.ModelAdmin):
-    list_display=['property','owner','property_address']
-    list_select_related=['related_property'] 
+    list_display = ('related_property', 'image')
+    list_filter = ('related_property',)
 
-    def property(self,images):
-        return images.related_property.title
+@admin.register(Booking)
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ('property', 'guest', 'check_in_date', 'check_out_date', 'total_price', 'status')
+    list_filter = ('status', 'property', 'guest')
+    search_fields = ('property__title', 'guest__username')
 
-    def property_address(self,property_address):
-        return property_address.related_property.address
+@admin.register(Conversation)
+class ConversationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'property', 'created_at', 'updated_at')
+    list_filter = ('property',)
+    search_fields = ('messages__content', 'property__title')
 
-    def owner(self,property_owner):
-        return property_owner.related_property.host
-
-
-
-class ParticipantInline(admin.TabularInline):
-    model = models.Conversation.participants.through
-    extra = 0
-    can_delete=False
-
-
-@admin.register(models.Conversation)
-class ConverstationAdmin(admin.ModelAdmin):
-    list_display=['id','participant_names','created_at']
-    search_fields=['participant_names']
-    inlines=[ParticipantInline]
-
-
-    
-@admin.register(models.Message)
+@admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display=['conversation','sender','time_stamp','participants','content']
+    list_display = ('conversation', 'sender', 'content', 'created_at')
+    list_filter = ('conversation', 'sender')
+    search_fields = ('content',)
 
-    def participants(self,obj):
-        return ", ".join([user.username for user in obj.conversation.participants.all()])
-    participants.short_description="Participants"
-    
+@admin.register(WaitListEntry)
+class WaitListEntryAdmin(admin.ModelAdmin):
+    list_display = ('related_property', 'guest', 'created_at')
+    list_filter = ('related_property', 'guest')

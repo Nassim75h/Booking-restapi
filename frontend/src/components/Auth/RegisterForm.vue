@@ -1,6 +1,9 @@
 <template>
   <h2>Register</h2>
   <div class="form-signup">
+    <div v-if="responseMessage" :class="['message', responseMessage.includes('successful') ? 'success' : 'error']">
+      {{ responseMessage }}
+    </div>
     <form action=""  >
       <label for="username">Username</label>
       <input v-model="userInfo.userName" placeholder="Username" type="text">
@@ -29,24 +32,43 @@ export default {
   props: {},
   components: [],
   setup(props) {
-    const userInfo =reactive({
-      email:'bb12@example.com',
-      password:'Zaki1217',
-      firstName:'yacine',
-      userName:'123s',
-      lastName:'bb',
-      terms:true,
-      confirmPassword:'Zaki1217',
+    const userInfo = reactive({
+      email: '',
+      password: '',
+      firstName: '',
+      userName: '',
+      lastName: '',
+      terms: false,
+      confirmPassword: ''
     })
-      const {registerUser} = useAxios(userInfo)
-    // console.log(userInfo);
-    const register = async (event) =>{
+    const {registerUser, responseMessage} = useAxios(userInfo)
+    
+    const register = async (event) => {
       event.preventDefault()
+      
+      // Basic validation
+      if (!userInfo.email || !userInfo.password || !userInfo.userName || 
+          !userInfo.firstName || !userInfo.lastName || !userInfo.confirmPassword) {
+        responseMessage.value = "Please fill in all fields"
+        return
+      }
+      
+      if (userInfo.password !== userInfo.confirmPassword) {
+        responseMessage.value = "Passwords do not match"
+        return
+      }
+      
+      if (!userInfo.terms) {
+        responseMessage.value = "Please accept the terms and conditions"
+        return
+      }
+      
       await registerUser()
     }
     return {
       userInfo,
       register,
+      responseMessage
     }
   }
 }
@@ -224,5 +246,23 @@ input[type="checkbox"]:checked::after {
   h2 {
     font-size: 2.2rem;
   }
+}
+.message {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 </style>

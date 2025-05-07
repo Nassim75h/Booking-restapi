@@ -16,25 +16,38 @@ class PropertyImagesSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.image.url)
         return None
 
-    def create(self,validated_data):
-        property_id=self.context.get("property_id")
+    def create(self, validated_data):
+        property_id = self.context.get("property_id")
 
         if not property_id:
             raise serializers.ValidationError("property_id must be provided")
         try:
-            related_property=models.Property.objects.get(id=property_id)
+            related_property = models.Property.objects.get(id=property_id)
         except models.Property.DoesNotExist:
             raise serializers.ValidationError(f"property with id {property_id} does not exist")
 
-        images=validated_data.get('images',[])
-        if len(images)>1:
-            property_images=[models.PropertyImage(related_property=related_property,image=image) for image in images]
-            created_images=models.PropertyImage.objects.bulk_create(property_images)
+        # Handle both single image and multiple images
+        single_image = validated_data.get('image')
+        multiple_images = validated_data.get('images', [])
+
+        if single_image:
+            # Create a single image
+            return models.PropertyImage.objects.create(
+                related_property=related_property,
+                image=single_image
+            )
+        elif multiple_images:
+            # Create multiple images
+            property_images = [
+                models.PropertyImage(related_property=related_property, image=image)
+                for image in multiple_images
+            ]
+            created_images = models.PropertyImage.objects.bulk_create(property_images)
             if not created_images:
-                raise serializers.ValidationError("no images  were created")
+                raise serializers.ValidationError("No images were created")
             return created_images[0]
-        else :
-            return models.PropertyImage.objects.create(related_property=related_property,image=images[0])
+        else:
+            raise serializers.ValidationError("No image provided")
 
 
     def update(self, instance, validated_data):
@@ -67,12 +80,33 @@ class CreatePropertySerializer(serializers.ModelSerializer):
             "max_guests",
             "description",
             "category",
+            "host"
         ]
+        read_only_fields = ["host"]
+    
+    def validate_price_per_night(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Price must be greater than 0")
+        return value
+
+    def validate_max_guests(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Maximum guests must be greater than 0")
+        return value
+
+    def create(self, validated_data):
+        # Get the user from the context
+        user = self.context.get('request').user
+        validated_data['host'] = user
+        return super().create(validated_data)
 
 
 class PropertySerializer(serializers.ModelSerializer):
-    images= PropertyImagesSerializer(many=True, read_only=True)
-    host=serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    host = serializers.SerializerMethodField()
+    description = serializers.CharField(required=False)
+    is_available = serializers.BooleanField(read_only=True)
+    
     class Meta:
         model = models.Property
         fields = [
@@ -80,11 +114,14 @@ class PropertySerializer(serializers.ModelSerializer):
             "title",
             "host",
             "address",
+            "city",
             "category",
             "max_guests",
             "price_per_night",
+            "description",
             "images",
             "blocked_dates",
+            "is_available"
         ]
 
     def get_host(self,obj):
@@ -92,7 +129,18 @@ class PropertySerializer(serializers.ModelSerializer):
             "id":obj.host.id,
             "username":obj.host.username
         }
-
+        
+    def get_images(self, obj):
+        request = self.context.get('request')
+        images = []
+        for image in obj.images.all():
+            if image.image:
+                if request:
+                    image_url = request.build_absolute_uri(image.image.url)
+                else:
+                    image_url = image.image.url
+                images.append(image_url)
+        return images
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -173,3 +221,34 @@ class CreateConversationSerializer(serializers.ModelSerializer):
         conversation.participants.set(participants)
         return conversation
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = models.Message
+        fields = ['id', 'sender', 'content', 'created_at']
+        read_only_fields = ['sender']
+
+class ConversationSerializer(serializers.ModelSerializer):
+    participants = UserSerializer(many=True, read_only=True)
+    property = PropertySerializer(read_only=True)
+    messages = MessageSerializer(many=True, read_only=True)
+    other_user = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = models.Conversation
+        fields = ['id', 'property', 'participants', 'messages', 'other_user', 'created_at', 'updated_at']
+        read_only_fields = ['participants']
+
+    def get_other_user(self, obj):
+        request = self.context.get('request')
+        if request and request.user:
+            other_user = obj.participants.exclude(id=request.user.id).first()
+            if other_user:
+                return UserSerializer(other_user).data
+        return None

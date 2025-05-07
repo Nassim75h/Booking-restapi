@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- White background circle -->
+  <circle cx="400" cy="400" r="380" fill="white" stroke="#4A90E2" stroke-width="40"/>
+  
+  <!-- Calendar base -->
+  <g transform="translate(200, 150) scale(1.2)">
+    <rect x="50" y="50" width="300" height="300" rx="20" fill="#4A90E2"/>
+    <rect x="80" y="120" width="240" height="200" fill="white"/>
+    <!-- Calendar top bar -->
+    <rect x="80" y="80" width="240" height="40" fill="#4A90E2"/>
+    <!-- Grid lines -->
+    <path d="M160 160v160M240 160v160M80 200h240M80 240h240M80 280h240" stroke="#E0E0E0" stroke-width="2"/>
+    <!-- Checkmark -->
+    <path d="M140 240l40 40 60-60" stroke="#4A90E2" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Gold circle with plus -->
+  <circle cx="600" cy="600" r="100" fill="#FFD700"/>
+  <path d="M600 540v120M540 600h120" stroke="white" stroke-width="25" stroke-linecap="round"/>
+</svg>

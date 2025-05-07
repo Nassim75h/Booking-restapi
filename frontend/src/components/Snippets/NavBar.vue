@@ -1,43 +1,73 @@
 <template>
     <div class="nav">
     <nav>
-      <div  v-if="isAuthenticatedComputed"  class="nav-auth">
-        <p class="user-details">user : {{userCredentials?.username}}</p>
-        <router-link :to="{name : 'home' }" class="nav-link"> Home</router-link> |
-        <a class="nav-link" @click="logout">Logout</a> |
-        <router-link :to="{name : 'owned-properties'}" class="nav-link">Properties</router-link>
+      <div v-if="isAuthenticatedComputed" class="nav-auth">
+        <p v-if="userCredentials" class="user-details">
+          <i class="fas fa-user"></i> {{ userCredentials.username }}
+        </p>
+        <router-link :to="{name: 'home'}" class="nav-link">
+          <i class="fas fa-home"></i> Home
+        </router-link>
+        <router-link :to="{name: 'owned-properties'}" class="nav-link">
+          <i class="fas fa-building"></i> My Properties
+        </router-link>
+        <router-link :to="{name: 'manage-bookings'}" class="nav-link">
+          <i class="fas fa-calendar-alt"></i> My Bookings
+        </router-link>
+        <a href="#" class="nav-link" @click.prevent="handleLogout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
       </div>
       <div v-else class="nav-anon">
-        <router-link  :to="{name :'login' }" class="nav-link">Login</router-link > |
-        <router-link :to="{name : 'register'}" class="nav-link">Sign up</router-link>/
-
+        <router-link :to="{name: 'login'}" class="nav-link">Login</router-link> |
+        <router-link :to="{name: 'register'}" class="nav-link">Sign up</router-link>
       </div>
     </nav>
     </div>
 </template>
 
 <script>
-import useAxios from '../../composables/fetchCredentials/axios.js'
-import {onMounted} from "vue";
+import { ref, onMounted } from 'vue'
+import useAxios from '@/composables/fetchCredentials/axios'
 
 export default {
-  name : "NavBar",
-  components: {},
-  props:[],
-  setup (props){
+  name: 'NavBar',
+  setup() {
+    const loading = ref(false)
+    const error = ref(null)
+    const { logout, isAuthenticatedComputed, fetchUserDetails, userCredentials } = useAxios()
 
-    const {logout,isAuthenticatedComputed,fetchUserDetails,userCredentials} = useAxios()
-    onMounted( () => {
-      fetchUserDetails()
+    const loadUserDetails = async () => {
+      try {
+        loading.value = true
+        error.value = null
+        await fetchUserDetails()
+      } catch (err) {
+        console.error('Error loading user details:', err)
+        error.value = err.message
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const handleLogout = () => {
+      if (confirm('Are you sure you want to log out?')) {
+        logout()
+      }
+    }
+
+    onMounted(() => {
+      loadUserDetails()
     })
 
     return {
-      logout,
-      isAuthenticatedComputed,
+      loading,
+      error,
       userCredentials,
+      isAuthenticatedComputed,
+      handleLogout
     }
   }
-
 }
 </script>
 

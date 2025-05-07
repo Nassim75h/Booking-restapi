@@ -60,6 +60,11 @@ class PropertyAmenity(models.Model):
         
 
 class Booking(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('card', 'Credit Card'),
+        ('ccp', 'CCP Edahabia'),
+    ]
+
     guest=models.ForeignKey(User,on_delete=models.CASCADE)
     property=models.ForeignKey(Property,on_delete=models.CASCADE,related_name='property')
     check_in_date=models.DateField()
@@ -73,7 +78,9 @@ class Booking(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     is_paid=models.BooleanField(default=False)
+    payment_method=models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, default='card')
     stripe_session_id=models.CharField(max_length=255,blank=True,null=True)
+    ccp_reference=models.CharField(max_length=255,blank=True,null=True)
     def __str__(self):
         return f"Booking {self.id} - {self.property.title}"
 
@@ -108,31 +115,27 @@ class WaitListEntry(models.Model):
         return f" user:{self.guest} confirmed :{self.confirmed}"
         
 class Conversation(models.Model):
-    id=models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
-    participants=models.ManyToManyField(User)
-    created_at=models.DateTimeField(auto_now_add=True)
+    property = models.ForeignKey('Property', on_delete=models.SET_NULL, related_name='conversations', null=True, blank=True)
+    participants = models.ManyToManyField(User, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    def participant_names(self):
-        return ", ".join([user.username for user in self.participants.all()])
-    
-    participant_names.short_description="Participants"
+    class Meta:
+        ordering = ['-updated_at']
 
     def __str__(self):
-        names=", ".join([user.username for user in self.participants.all()])
-        return f"{names}"
-
+        participant_names = ", ".join([str(p) for p in self.participants.all()])
+        property_info = f" about {self.property.title}" if self.property else ""
+        return f'Conversation between {participant_names}{property_info}'
 
 class Message(models.Model):
-    conversation=models.ForeignKey(Conversation,on_delete=models.CASCADE)
-    sender=models.ForeignKey(User,on_delete=models.CASCADE)
-    content=models.TextField()
-    time_stamp=models.DateTimeField(auto_now_add=True)
-    is_read=models.BooleanField(default=False)
-    
-    def clean(self):
-        if self.sender not in self.conversation.participants.all():
-            raise ValidationError("Sender must be a participant in the conversation.")
-    
-    
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['created_at']
 
+    def __str__(self):
+        return f'Message from {self.sender.username} at {self.created_at}'

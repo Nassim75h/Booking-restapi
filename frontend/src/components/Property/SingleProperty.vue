@@ -39,6 +39,7 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import uploadPropertyImage from '@/composables/fetchProperties/uploadPropertyImage';
+import { useRouter } from 'vue-router';
 
 export default {
   name: "SingleProperty",
@@ -50,6 +51,7 @@ export default {
     }
   },
   setup(props) {
+    const router = useRouter();
     const propertyImage = ref(null);
     const imageError = ref(false);
     const imageLoading = ref(true);
@@ -126,7 +128,11 @@ export default {
         maximumFractionDigits: 2
       });
     };
-    
+
+    const goBack = () => {
+      router.go(-1); // This will go back to the previous page
+    };
+
     onMounted(() => {
       mounted.value = true;
       loadImage();
@@ -143,7 +149,8 @@ export default {
       imageLoading,
       mounted,
       handleImageError,
-      formatPrice
+      formatPrice,
+      goBack
     };
   }
 }
@@ -151,13 +158,13 @@ export default {
 
 <style scoped>
 .property-details {
-  border: 1px solid #ddd;
+  position: relative;
+  background: transparent;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
   transition: transform 0.2s;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  background: white;
 }
 
 .property-details:hover {
