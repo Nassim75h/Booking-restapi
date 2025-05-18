@@ -72,6 +72,8 @@
 <script>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import useAxios from '@/composables/fetchCredentials/axios'
+import getProperties from '@/composables/fetchProperties/getProperties'
 
 export default {
   name: 'SearchView',
@@ -87,15 +89,33 @@ export default {
     const properties = ref([])
     const loading = ref(false)
     const error = ref(null)
+    const { get } = useAxios()
+    const { load: loadProperties } = getProperties()
 
     const searchProperties = async (query) => {
       loading.value = true
       error.value = null
       try {
-        // TODO: Replace with actual API call
-        const response = await fetch(`/api/properties/search?q=${encodeURIComponent(query)}`)
-        const data = await response.json()
-        properties.value = data
+        const { data, load } = getProperties()
+        await load()
+        
+        console.log('Loaded properties:', data.value)
+        
+        if (!data.value) {
+          throw new Error('No properties loaded')
+        }
+        
+        // Filter properties based on search query
+        properties.value = query
+          ? data.value.filter(p => 
+              p.title?.toLowerCase().includes(query.toLowerCase()) ||
+              p.city?.toLowerCase().includes(query.toLowerCase()) ||
+              p.description?.toLowerCase().includes(query.toLowerCase()) ||
+              p.address?.toLowerCase().includes(query.toLowerCase())
+            )
+          : data.value
+
+        console.log('Filtered properties:', properties.value)
       } catch (err) {
         error.value = 'Failed to load properties. Please try again.'
         console.error('Search error:', err)
@@ -105,17 +125,15 @@ export default {
     }
 
     const handleSearch = () => {
-      if (searchQuery.value.trim()) {
-        router.push({
-          name: 'search',
-          query: { q: searchQuery.value.trim() }
-        })
+      if (searchQuery.value) {
+        router.push({ name: 'search', query: { q: searchQuery.value } })
+        searchProperties(searchQuery.value)
       }
     }
 
     watch(() => props.query, (newQuery) => {
+      searchQuery.value = newQuery
       if (newQuery) {
-        searchQuery.value = newQuery
         searchProperties(newQuery)
       }
     })
@@ -123,6 +141,9 @@ export default {
     onMounted(() => {
       if (props.query) {
         searchProperties(props.query)
+      } else {
+        // Load all properties if no query
+        searchProperties('')
       }
     })
 

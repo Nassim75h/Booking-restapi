@@ -231,7 +231,7 @@ export default {
 
         // Add navigation function
         const goToHome = () => {
-            router.push('/');
+            router.push('/home');
         };
 
         // Load owned properties on component mount
@@ -262,7 +262,7 @@ export default {
 
 <style scoped>
 .container {
-    background: transparent;
+    background: whitesmoke;
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);

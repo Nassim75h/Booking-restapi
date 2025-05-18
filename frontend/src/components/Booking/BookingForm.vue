@@ -102,12 +102,12 @@
     <!-- Price Summary -->
     <div class="price-summary" v-if="totalNights > 0">
       <div class="price-row">
-        <span>€{{ property.price_per_night }} × {{ totalNights }} nights</span>
-        <span>€{{ totalPrice }}</span>
+        <span>DZ{{ property.price_per_night }} × {{ totalNights }} nights</span>
+        <span>DZ{{ totalPrice }}</span>
       </div>
       <div class="total-price">
         <span>Total</span>
-        <span>${{ totalPrice }}</span>
+        <span>DZ{{ totalPrice }}</span>
       </div>
     </div>
 
@@ -360,7 +360,7 @@ const handlePaymentFailed = (err) => {
 
 // Navigation function
 const goToHome = () => {
-  router.push('/')  // Navigate to root/home page
+  router.push('/home')  // Navigate to root/home page
 }
 
 // Watch for date changes

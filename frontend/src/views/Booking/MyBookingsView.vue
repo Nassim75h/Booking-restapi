@@ -55,7 +55,7 @@
 
             <div class="booking-price">
               <span class="total-label">Total:</span>
-              <span class="price">€{{ booking.total_price }}</span>
+              <span class="price">DZ{{ booking.total_price }}</span>
             </div>
 
             <div class="booking-actions">

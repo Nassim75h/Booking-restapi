@@ -1,5 +1,4 @@
 <template>
-    <h1>Login</h1>
     <NavBar></NavBar>
     <div class="login-form">
         <LoginForm></LoginForm>

@@ -80,7 +80,7 @@
             <div class="payment-summary">
               <div class="summary-row">
                 <span>Total Amount:</span>
-                <span class="amount">€{{ amount }}</span>
+                <span class="amount">DZ{{ amount }}</span>
               </div>
             </div>
 
@@ -89,7 +89,7 @@
               class="pay-button"
               :disabled="!isFormValid || loading"
             >
-              {{ loading ? 'Processing...' : `Pay €${amount}` }}
+              {{ loading ? 'Processing...' : `Pay DZ${amount}` }}
             </button>
           </form>
         </div>

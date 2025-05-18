@@ -102,11 +102,9 @@ body {
 
 /* FORM CONTAINER */
 .form-signup {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 2px solid var(--white-color);
+  background-color: white;
   padding: 2.5rem 2rem;
-  border-radius: 1rem;
-  backdrop-filter: blur(10px);
+  border-radius: 20px;
   width: 380px;
   text-align: center;
   animation: fadeIn 1s ease-out;
@@ -114,16 +112,24 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: auto ;
+  margin: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* TITLE */
 h2 {
-color: rgb(175, 157, 56);
-  font-size: var(--h1-font-size);
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  opacity: 0;
+  color: #1a2e44;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  letter-spacing: -0.5px;
   animation: fadeIn 0.8s ease-out forwards;
 }
 
@@ -139,27 +145,39 @@ form {
 
 /* INPUT & LABEL STYLING */
 label {
-  font-weight: bold;
+  color: #4b5563;
+  font-weight: 500;
+  font-size: 0.9rem;
   text-align: left;
   display: block;
-  margin-bottom: 5px;
-  opacity: 0;
+  margin-bottom: 0.5rem;
   animation: fadeIn 1s ease-out forwards 0.2s;
 }
 
 input {
   width: 100%;
-  padding: 0.8rem;
-  border: 2px solid var(--white-color);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--white-color);
-  font-size: var(--normal-font-size);
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #1a2e44;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
 }
 
+input:hover {
+  background-color: white;
+  border-color: #cbd5e1;
+}
+
+input:focus {
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+  outline: none;
+}
+
 input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(26, 46, 68, 0.5);
 }
 
 /* INPUT FOCUS EFFECT */
@@ -178,14 +196,25 @@ label span {
 }
 
 input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  border: 2px solid var(--white-color);
-  border-radius: 4px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
   appearance: none;
   position: relative;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
+  background: #f8fafc;
+}
+
+input[type="checkbox"]:hover {
+  border-color: #6366f1;
+  background: white;
+}
+
+input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
 }
 
 input[type="checkbox"]:checked {
@@ -195,30 +224,36 @@ input[type="checkbox"]:checked {
 input[type="checkbox"]:checked::after {
   content: '✔';
   font-size: 0.9rem;
-  color: var(--black-color);
+  color: white;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* SIGN-UP BUTTON */
 .btn-signup {
   width: 100%;
   padding: 1rem;
-  border-radius: 0.5rem;
-  background-color: var(--primary-color);
-  color: rgba(12, 14, 29, 0.807);
-  font-weight: bold;
+  margin-top: 2rem;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: none;
-  font-size: var(--normal-font-size);
+  border-radius: 14px;
+  transition: all 0.4s ease;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  background-size: 200% 200%;
 }
 
 .btn-signup:hover {
-  transform: scale(1.05);
-  box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3);
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
 /* FADE-IN ANIMATION */

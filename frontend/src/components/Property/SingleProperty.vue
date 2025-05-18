@@ -27,7 +27,7 @@
         <i class="fas fa-map-marker-alt"></i> {{ property.city }}
       </p>
       <p class="property-price" v-if="property.price_per_night">
-        ${{ formatPrice(property.price_per_night) }} <span>per night</span>
+        DZ{{ formatPrice(property.price_per_night) }} <span>per night</span>
       </p>
       <p class="property-host" v-if="property.host">
         <i class="fas fa-user"></i> {{ property.host.username }}

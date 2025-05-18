@@ -4,7 +4,7 @@
       <div class="navbar-brand">
         <router-link to="/" class="logo-link">
           <img src="@/assets/images/booking-logo.svg" alt="Booking Logo" class="logo-img">
-          <span class="brand-name">Booking</span>
+          <span class="brand-name">EasyStayDZ</span>
         </router-link>
       </div>
       <NotificationContainer />
@@ -34,7 +34,7 @@ export default defineComponent({
   color: #191438;
 }
 body{
-  background: url('@/assets/IMG1.jpg') no-repeat center center/cover;
+  background: url('@/assets/h.png') no-repeat center center/cover;
 
 }
 .navbar-brand {

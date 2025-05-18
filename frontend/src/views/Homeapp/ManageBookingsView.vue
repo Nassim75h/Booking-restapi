@@ -1,6 +1,6 @@
 <template>
   <div class="manage-bookings">
-    <router-link to="/" class="back-home-btn">
+    <router-link to="/home" class="back-home-btn">
       <i class="fas fa-home"></i> Back to Home
     </router-link>
     <nav class="tabs">

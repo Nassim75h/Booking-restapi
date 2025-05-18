@@ -1,6 +1,5 @@
 <template>
   <div class="login">
-    <img src="your-image.jpg" alt="Background Image" class="login__img">
     <h1 class="login__title">Sign In</h1>
 
     <div class="login__form">
@@ -142,79 +141,89 @@ img {
 
 .login__form {
   position: relative;
-  border: 2px solid var(--white-color);
-  padding: 2.5rem 1.5rem;
-  border-radius: 1rem;
-  backdrop-filter: blur(8px);
-  width: 360px;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  background: white;
+  width: 380px;
   margin: auto;
-  
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .login__title {
   text-align: center;
-  font-size: var(--h1-font-size);
-  font-weight: var(--h1-font-size);
-  margin-bottom: 10rem;
-  color: rgba(182, 161, 42, 0.987);
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: #1a2e44;
 }
 
 .login__content {
-  display: grid;
-  row-gap: 1.75rem;
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .login__box {
-  display: grid;
-  grid-template-columns: max-content 1fr;
+  position: relative;
+  display: flex;
   align-items: center;
-  column-gap: 0.75rem;
-  border-bottom: 2px solid var(--white-color);
 }
 
-.login__icon,
-.login__eye {
+.login__icon {
+  position: absolute;
+  left: 1rem;
+  color: #666;
   font-size: 1.25rem;
+}
+
+.login__box-input {
+  width: 100%;
 }
 
 .login__input {
   width: 100%;
-  padding: 1rem;
-  border: 2px solid var(--white-color);
-  background: none;
-  color: var(--white-color);
-  transition: border 0.4s;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
-.login__input.error {
-  border-color: #dc2626;
-}
-
-.login-err {
-  color: #dc2626;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-  margin-bottom: 0.5rem;
-}
-
-.login__box-input {
-  position: relative;
+.login__input:focus {
+  border-color: #4A90E2;
+  outline: none;
 }
 
 .login__label {
   position: absolute;
-  left: 0;
-  top: 13px;
-  font-weight: var(--font-medium);
-  transition: top 0.3s, font-size 0.3s;
+  left: 3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  transition: all 0.3s;
+  pointer-events: none;
+  background-color: white;
+  padding: 0 0.25rem;
+}
+
+.login__input:focus + .login__label,
+.login__input:not(:placeholder-shown) + .login__label {
+  top: 0;
+  transform: translateY(-50%) scale(0.8);
+  color: #4A90E2;
 }
 
 .login__eye {
   position: absolute;
-  right: 0;
-  top: 18px;
-  z-index: 10;
+  right: 1rem;
+  color: #666;
   cursor: pointer;
 }
 
@@ -222,172 +231,35 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  transition: all 0.3s ease-in-out;
+  margin: 1rem 0;
 }
 
-/* Checkbox Animation */
-.login__check-input {
-  width: 18px;
-  height: 18px;
-  appearance: none;
-  background-color: transparent;
-  border: 2px solid var(--white-color);
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.3s ease-in-out;
-}
-
-.login__check-input:checked {
-  background-color: var(--white-color);
-}
-
-.login__check-input:checked::after {
-  content: '✔';
-  font-size: 0.9rem;
-  color: var(--black-color);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* Label & Link Styling */
-.login__check-label,
-.login__forgot,
-.login__register {
-  font-size: var(--small-font-size);
-  transition: color 0.3s ease-in-out;
-}
-
-.login__forgot,
-.login__register a {
-  color: var(--white-color);
-  text-decoration: none;
-  font-weight: bold;
-  position: relative;
-}
-
-.login__forgot:hover,
-.login__register a:hover {
-  color: #ffdd57;
-  text-decoration: underline;
-}
-
-/* Adding a subtle hover effect */
-.login__check:hover {
-  transform: scale(1.05);
-}
-
-
-.login__forgot {
-  color: var(--white-color);
-}
-
-.login__forgot:hover,
-.login__register a:hover {
-  text-decoration: underline;
-}
-
-.login__button {
-  width: 100%;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background-color: var(--white-color);
-  color: var(--black-color);
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
+.login__check-group {
+  display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  transition: opacity 0.3s;
 }
 
-.login__button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.login__check-input {
+  width: 1rem;
+  height: 1rem;
 }
 
+.login__forgot,
 .login__register {
-  text-align: center;
+  color: #4A90E2;
+  text-decoration: none;
 }
 
-.login__register a {
-  color: var(--white-color);
-  font-weight: var(--font-medium);
+.login__forgot:hover,
+.login__register:hover {
+  text-decoration: underline;
 }
 
-/* Floating Labels */
-.login__input:focus + .login__label,
-.login__input:not(:placeholder-shown):not(:focus) + .login__label {
-  top: -12px;
-  font-size: var(--small-font-size);
-}
-
-/* Responsive Design */
-@media screen and (min-width: 576px) {
-  .login__form {
-    width: 432px;
-    padding: 4rem 3rem 3.5rem;
-    border-radius: 1.5rem;
-    backdrop-filter: blur(10px);
-    animation: fadeIn 1s ease-out;
-    display: flex;
-    border: 2px solid var(--white-color);
-    
-
-  }
-
-  .login__title {
-    font-size: 2rem;
-  }
-}
-.login__title {
-  text-align: center;
-  font-size: var(--h1-font-size);
-  font-weight: bold; /* Bold title */
-  margin-bottom: 2rem;
-  opacity: 0;
-  transform: translateY(-20px);
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.login__label {
-  position: absolute;
-  left: 0;
-  top: 13px;
-  font-weight: bold; /* Bold label */
-  transition: top 0.3s, font-size 0.3s, color 0.3s;
-  opacity: 0;
-  animation: fadeIn 1s ease-out forwards 0.2s;
-}
-
-.login__button {
-  color: rgba(12, 14, 29, 0.807);
-  width: 100%;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  font-weight: bold; /* Bold button */
-  cursor: pointer;
-  margin-bottom: 2rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  opacity: 0;
-  animation: fadeIn 1s ease-out forwards 0.4s;
-}
-
-.login__button:hover {
-  transform: scale(1.05);
-  box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3);
-}
-
-/* Floating Labels Animation */
-.login__input:focus + .login__label,
-.login__input:not(:placeholder-shown):not(:focus) + .login__label {
-  top: -12px;
-  font-size: var(--small-font-size);
-  color: var(--white-color);
+.login-err {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 /* Fade-in Animation */

@@ -62,7 +62,7 @@
             <div class="booking-card">
               <h3>Book this property</h3>
               <div class="price">
-                <span class="amount">${{ property.price_per_night }}</span>
+                <span class="amount">DZ{{ property.price_per_night }}</span>
                 <span class="period">per night</span>
               </div>
               <button @click="showBookingForm = true" class="book-button">
@@ -373,7 +373,7 @@ export default {
 }
 
 .info-card, .booking-card {
-  background: transparent;
+  background: whitesmoke;
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 20px;
@@ -441,7 +441,7 @@ export default {
 }
 
 .booking-card {
-  background-color: transparent;
+  background-color: whitesmoke;
   padding: 1.5rem;
 }
 

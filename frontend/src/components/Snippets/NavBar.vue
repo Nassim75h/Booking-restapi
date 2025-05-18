@@ -72,8 +72,7 @@ export default {
 </script>
 
 <style>
-
-.nav{
+.nav {
   display: flex;
   padding: 15px 10px;
   height: 50px;
@@ -81,19 +80,29 @@ export default {
   align-items: center;
   justify-content: center;
 }
-nav{
+
+nav {
   align-self: center;
 }
-.user-details{
-  float: left;
+
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-details {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   font-size: 0.9rem;
-  padding: 1vh 2vh ;
-  border-radius: 0.4rem;
+  padding: 10px 20px;
+  border-radius: 8px;
   background: #26415e;
   color: rgb(236, 176, 63);
-  margin: 0.5vh;
+  margin: 0;
+  min-width: 120px;
+  text-align: center;
 }
+
 .nav-link {
   cursor: pointer;
   padding: 10px 20px;
@@ -102,24 +111,34 @@ nav{
   text-decoration: none;
   border-radius: 8px;
   background: #1a2e44;
-  width: 100px;
+  min-width: 120px;
   text-align: center;
   display: inline-block;
+  margin: 0;
   transition: all 0.3s ease-in-out;
 }
 
 .nav-link:hover {
   background: #284b70;
-  color: rgb(177, 160, 61);
+}
+
+.nav-link.router-link-active {
+  background: #284b70;
   transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .nav-link.router-link-exact-active {
-  background: #0b1b32;
+  color: rgb(236, 176, 63);
   font-weight: bold;
 }
+
 .nav-link:hover {
   background: #0b1b32;
+}
+
+.nav-link.router-link-exact-active {
+  background: #0b1b32;
+  font-weight: bold;
 }
 </style>

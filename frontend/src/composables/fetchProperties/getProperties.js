@@ -18,50 +18,48 @@ const getProperties = () => {
         setTimeout(() => reject(new Error('Request timeout')), 15000)
       );
       
-      // Make request to the correct endpoint without api/v0 prefix since it's in baseURL
       console.log('Making request to: booking/properties/');
       const fetchPromise = get('booking/properties/');
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
-      // Log response for debugging
       console.log('API Response:', response)
       
-      if (!response) {
+      if (!response || !response.data) {
         throw new Error('No response received')
       }
 
-      if (response.data) {
-        // Normalize the data structure
-        const properties = Array.isArray(response.data) ? response.data :
-                       response.data.results ? response.data.results :
-                       [response.data];
-                    
-        // Process each property to ensure image URLs are absolute
-        data.value = properties.map(property => {
-          if (property.images && property.images.length > 0) {
-            // Convert relative URLs to absolute URLs if needed
-            const processedImages = property.images.map(img => {
-              if (typeof img === 'string') {
-                return img.startsWith('http') ? img : `http://localhost:8000${img}`;
-              }
-              // Handle case where img is an object with image property
-              if (img && img.image) {
-                const imageUrl = img.image;
-                return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8000${imageUrl}`;
-              }
-              return img;
-            });
-            return { ...property, images: processedImages };
-          }
-          return property;
-        });
-                    
-        // Validate data structure
-        if (!data.value.every(property => property.id && property.title)) {
-          console.warn('Some properties may be missing required fields');
+      // Normalize the data structure
+      const properties = Array.isArray(response.data) ? response.data :
+                     response.data.results ? response.data.results :
+                     [response.data];
+                  
+      // Process each property
+      data.value = properties.map(property => {
+        // Process images if they exist
+        if (property.images && property.images.length > 0) {
+          property.images = property.images.map(img => {
+            if (typeof img === 'string') {
+              return img.startsWith('http') ? img : `http://localhost:8000${img}`;
+            }
+            return img && img.image ? 
+              (img.image.startsWith('http') ? img.image : `http://localhost:8000${img.image}`) :
+              null;
+          }).filter(img => img); // Remove any null images
         }
-      } else {
-        throw new Error('No data received from server')
+        
+        return {
+          ...property,
+          // Ensure all text fields are strings for searching
+          title: String(property.title || ''),
+          description: String(property.description || ''),
+          city: String(property.city || ''),
+          address: String(property.address || '')
+        };
+      });
+
+      // Validate data structure
+      if (!data.value.every(property => property.id && property.title)) {
+        console.warn('Some properties may be missing required fields');
       }
     } catch (err) {
       console.error('Property loading error:', err);

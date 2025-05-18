@@ -14,7 +14,7 @@
         </div>
         <div class="detail-row">
           <span>Amount Paid:</span>
-          <span>€{{ amount }}</span>
+          <span>DZ{{ amount }}</span>
         </div>
       </div>
       <div class="actions">
