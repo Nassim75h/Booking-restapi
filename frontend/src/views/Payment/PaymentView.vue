@@ -85,7 +85,7 @@
               Processing...
             </span>
             <span v-else>
-              Pay €{{ amount }}
+              Pay DZ{{ amount }}
             </span>
           </button>
         </form>

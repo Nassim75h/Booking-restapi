@@ -48,7 +48,7 @@
               <i class="fas fa-map-marker-alt"></i>
               {{ property.city }}
             </p>
-            <p class="price">€{{ property.price_per_night }} / night</p>
+            <p class="price">DZ{{ property.price_per_night }} / night</p>
             <div class="property-features">
               <span>
                 <i class="fas fa-user"></i>

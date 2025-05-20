@@ -1,20 +1,56 @@
 <template>
   <div class="property-detail">
+    <!-- Back to Home Button -->
+    <div class="back-button-container">
+      <button class="back-button" @click="goBack">
+        <i class="fas fa-arrow-left"></i> Back to Home
+      </button>
+    </div>
+
     <div v-if="property" class="details">
       <!-- Property Image Section -->
       <div class="property-image-section">
         <div class="main-image-container">
           <img 
-            v-if="property.images && property.images.length > 0" 
-            :src="getImageUrl(property.images[0])" 
-            :alt="property.title"
+            v-if="hasImages" 
+            :src="getImageUrl(currentImageUrl)" 
+            :alt="imageAltText"
             class="main-image"
-            @error="handleImageError($event, 0)"
+            @error="handleImageError($event, currentImageIndex)"
           >
           <div v-else class="no-image">
             <i class="fas fa-home"></i>
             <span>No image available</span>
           </div>
+        </div>
+        
+        <!-- Thumbnail Gallery -->
+        <div v-if="hasImages" class="image-thumbnails">
+          <button 
+            class="nav-button prev" 
+            @click="previousImage" 
+            :disabled="currentImageIndex === 0"
+          >
+            ←
+          </button>
+          <div class="thumbnails-container">
+            <img 
+              v-for="(image, index) in property.images" 
+              :key="index"
+              :src="getImageUrl(image)" 
+              :alt="imageAltText"
+              :class="['thumbnail', { active: currentImageIndex === index }]"
+              @click="setCurrentImage(index)"
+              @error="handleImageError($event, index)"
+            >
+          </div>
+          <button 
+            class="nav-button next" 
+            @click="nextImage" 
+            :disabled="currentImageIndex === property.images.length - 1"
+          >
+            →
+          </button>
         </div>
         <div class="property-header">
           <h1>{{ property.title }}</h1>
@@ -146,7 +182,8 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, toRef } from 'vue';
+import { useRouter } from 'vue-router';
 import uploadPropertyImage from '@/composables/fetchProperties/uploadPropertyImage';
 import { getPropertyDetails } from '@/composables/fetchProperties/getPropertyDetail';
 import BookingForm from '@/components/Booking/BookingForm.vue';
@@ -156,15 +193,19 @@ import ConversationForm from '@/components/Conversation/ConversationForm.vue';
 
 export default {
   name: "PropertyDetail",
-  components: {
-    BookingForm,
-    WishListButton,
-    ConversationForm
-  },
+  components: { BookingForm, WishListButton, ConversationForm },
   props: {
     property: {
       type: Object,
-      required: true
+      required: true,
+      default: () => ({
+        images: [],
+        title: '',
+        description: '',
+        price_per_night: 0,
+        max_guests: 0,
+        address: '',
+      })
     },
     isOwner: {
       type: Boolean,
@@ -174,14 +215,24 @@ export default {
   emits: ['property-updated'],
 
   setup(props, { emit }) {
+    const router = useRouter();
     const { get, post } = useAxios();
-    const selectedFile = ref(null);
-    const uploadMessage = ref('');
-    const uploadError = ref(false);
+
+    const goBack = () => {
+      router.push('/home');
+    };
+    
+    // UI state refs
     const showBookingForm = ref(false);
     const showConversationForm = ref(false);
-    const failedImages = ref({});
+    const currentImageIndex = ref(0);
+    
+    // Upload state refs
+    const selectedFile = ref(null);
+    const uploadMessage = ref('');
+    const uploadError = ref('');
     const isUploading = ref(false);
+    const failedImages = ref({});
 
     // Function to get proper image URL
     const getImageUrl = (image) => {
@@ -223,11 +274,51 @@ export default {
       return imageUrl;
     };
 
-    // Handle image loading errors
+    const property = toRef(props, 'property');
+
+    const hasImages = computed(() => {
+      return property.value?.images && property.value.images.length > 0;
+    });
+
+    const currentImageUrl = computed(() => {
+      if (hasImages.value) {
+        return property.value.images[currentImageIndex.value];
+      }
+      return null;
+    });
+
+    const imageAltText = computed(() => {
+      if (hasImages.value) {
+        return `${property.value.title} - Image ${currentImageIndex.value + 1} of ${property.value.images.length}`;
+      }
+      return 'No image available';
+    });
+
+    const setCurrentImage = (index) => {
+      if (property.value?.images && index >= 0 && index < property.value.images.length) {
+        currentImageIndex.value = index;
+      }
+    };
+
+    const nextImage = () => {
+      if (property.value?.images && currentImageIndex.value < property.value.images.length - 1) {
+        currentImageIndex.value++;
+      }
+    };
+
+    const previousImage = () => {
+      if (currentImageIndex.value > 0) {
+        currentImageIndex.value--;
+      }
+    };
+
+    // Reset current image index when property changes
+    watch(() => property.value, () => {
+      currentImageIndex.value = 0;
+    }, { immediate: true });
+
     const handleImageError = (event, index) => {
-      console.error(`Failed to load image at index ${index}`, event);
-      failedImages.value[index] = true;
-      event.target.src = '/placeholder-image.jpg';
+      event.target.src = '/default-property.jpg';
     };
 
     // Handle file selection
@@ -273,18 +364,27 @@ export default {
     };
 
     return {
-      getImageUrl,
-      handleImageError,
-      handleImageUpload,
-      handleBookingCompleted,
-      handleMessageSent,
-      handleWishlistUpdate,
-      uploadMessage,
-      uploadError,
+      property,
+      goBack,
       showBookingForm,
       showConversationForm,
-      failedImages,
-      isUploading
+      handleImageError,
+      getImageUrl,
+      handleMessageSent,
+      handleBookingCompleted,
+      handleWishlistUpdate,
+      currentImageIndex,
+      hasImages,
+      currentImageUrl,
+      imageAltText,
+      setCurrentImage,
+      nextImage,
+      previousImage,
+      selectedFile,
+      uploadMessage,
+      uploadError,
+      isUploading: ref(false),
+      failedImages: ref([])
     };
   }
 };
@@ -301,6 +401,115 @@ export default {
 
 .property-image-section {
   margin-bottom: 2rem;
+  position: relative;
+}
+
+.main-image-container {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  position: relative;
+  background: #f5f5f5;
+}
+
+.main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.image-thumbnails {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.thumbnails-container {
+  display: flex;
+  gap: 0.8rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.thumbnails-container::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.thumbnail.active {
+  border-color: #4CAF50;
+  transform: scale(1.05);
+}
+
+.thumbnail:hover:not(.active) {
+  transform: scale(1.05);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.nav-button {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  color: #5692f3;
+  z-index: 2;
+}
+
+.nav-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #f5f5f5;
+  color: #666;
+}
+
+.no-image i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
 .main-image-container {
@@ -363,6 +572,33 @@ export default {
   padding: 0 2rem;
   position: relative;
   z-index: 2;
+}
+
+.back-button-container {
+  margin-bottom: 1.5rem;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #5696ee;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #374151;
+  transform: translateY(-1px);
+}
+
+.back-button i {
+  font-size: 0.875rem;
 }
 
 .main-content {

@@ -105,104 +105,127 @@ export default {
         const propertyDetails = ref(null);
         const selectedImages = ref([]);
         const imagePreviews = ref([]); // Array of preview URLs
-        const showPropertyDetail = ref(false);
         const selectedPropertyData = ref(null);
+        const showPropertyDetail = ref(false);
 
         const handleImageChange = (event) => {
-            const newFiles = Array.from(event.target.files);
-            selectedImages.value = [...selectedImages.value, ...newFiles];
+            const files = event.target.files;
+            if (!files) return;
             
-            // Create preview URLs for the selected images
-            newFiles.forEach(file => {
-                imagePreviews.value.push(URL.createObjectURL(file));
-            });
+            // Convert FileList to array
+            const newFiles = Array.from(files);
+            
+            // Validate file types
+            const validFiles = newFiles.filter(file => file.type.startsWith('image/'));
+            if (validFiles.length !== newFiles.length) {
+                postError.value = "Please select only image files";
+                event.target.value = ''; // Reset file input
+                return;
+            }
+            
+            // Update selected images
+            selectedImages.value = [...(selectedImages.value || []), ...validFiles];
+            
+            // Generate previews for new images
+            const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+            imagePreviews.value = [...(imagePreviews.value || []), ...newPreviews];
         };
 
         const removeImage = (index) => {
-            // Remove the image and its preview
-            selectedImages.value.splice(index, 1);
-            URL.revokeObjectURL(imagePreviews.value[index]); // Clean up the URL
-            imagePreviews.value.splice(index, 1);
+            // Remove from selectedImages array
+            const updatedImages = Array.from(selectedImages.value);
+            updatedImages.splice(index, 1);
+            selectedImages.value = updatedImages;
+            
+            // Remove preview
+            const updatedPreviews = [...imagePreviews.value];
+            URL.revokeObjectURL(updatedPreviews[index]); // Clean up object URL
+            updatedPreviews.splice(index, 1);
+            imagePreviews.value = updatedPreviews;
         };
 
-        const handleSubmit = async () => {
-            postError.value = null;
-
-            if (selectedImages.value.length === 0) {
-                postError.value = 'Please select at least one image';
+        const handleSubmit = async (event) => {
+            event.preventDefault();
+            if (!selectedImages.value || selectedImages.value.length === 0) {
+                postError.value = "Please select at least one image";
                 return;
             }
 
             try {
-                // Submit the property data
-                const submitResult = await submit(newProperty.value);
-                if (!submitResult) {
-                    postError.value = 'Failed to create property';
+                // Validate required fields
+                const requiredFields = ['title', 'city', 'address', 'price_per_night', 'max_guests', 'description', 'category'];
+                const missingFields = requiredFields.filter(field => !newProperty.value[field]);
+                
+                if (missingFields.length > 0) {
+                    postError.value = `Please fill in all required fields: ${missingFields.join(', ')}`;
                     return;
                 }
 
-                try {
-                    // Upload each image
-                    for (const image of selectedImages.value) {
-                        const uploadResult = await upload(submitResult.id, image, true);
-                        if (!uploadResult.success) {
-                            throw new Error('Failed to upload image');
-                        }
-                    }
+                // Ensure numeric values are properly formatted
+                const formattedProperty = {
+                    ...newProperty.value,
+                    price_per_night: Number(newProperty.value.price_per_night),
+                    max_guests: Number(newProperty.value.max_guests)
+                };
 
-                    // Refresh property details to include the new images
-                    const { property: updatedProperty, load: loadPropertyDetails } = getPropertyDetails(submitResult.id);
-                    await loadPropertyDetails();
-                    propertyDetails.value = updatedProperty.value;
-                    
-                    // Fetch images specifically
-                    const imagesResult = await fetchImages(submitResult.id, true);
-                    if (imagesResult.success && imagesResult.data) {
-                        if (propertyDetails.value) {
-                            propertyDetails.value.images = imagesResult.data;
-                        }
+                // Validate numeric values
+                if (isNaN(formattedProperty.price_per_night) || formattedProperty.price_per_night <= 0) {
+                    postError.value = 'Price per night must be a valid positive number';
+                    return;
+                }
+
+                if (isNaN(formattedProperty.max_guests) || formattedProperty.max_guests <= 0) {
+                    postError.value = 'Max guests must be a valid positive number';
+                    return;
+                }
+
+                console.log('Submitting property:', formattedProperty);
+                const result = await submit(formattedProperty);
+                
+                if (result && result.id) {
+                    console.log('Property created successfully with ID:', result.id);
+                    // Upload all images
+                    const uploadPromises = Array.from(selectedImages.value).map(image => 
+                        upload(result.id, image, true)
+                    );
+
+                    const imageResults = await Promise.all(uploadPromises);
+                    const failedUploads = imageResults.filter(r => !r.success);
+
+                    if (failedUploads.length > 0) {
+                        postError.value = `Error uploading ${failedUploads.length} images`;
+                    } else {
+                        // Clear form
+                        newProperty.value = {
+                            title: "",
+                            city: "",
+                            address: "",
+                            price_per_night: "",
+                            max_guests: "",
+                            description: "",
+                            category: "",
+                        };
+                        // Clean up object URLs
+                        imagePreviews.value.forEach(preview => URL.revokeObjectURL(preview));
+                        selectedImages.value = [];
+                        imagePreviews.value = [];
+                        
+                        // Reset file input
+                        const fileInput = document.getElementById('property-image');
+                        if (fileInput) fileInput.value = '';
+                        
+                        // Reload properties
+                        await load();
                     }
-                    
-                    console.log('Images uploaded and property updated successfully.');
-                    
-                    // Show the property detail with the new images
-                    selectedPropertyData.value = propertyDetails.value;
-                    showPropertyDetail.value = true;
-                    
-                    // Reset the form
-                    resetForm();
-                    
-                    // Refresh the properties list
-                    await load();
-                    
-                } catch (error) {
-                    console.error('Image upload failed:', error);
-                    postError.value = 'Failed to upload one or more images';
+                } else {
+                    postError.value = "Failed to create property - no ID returned";
                 }
             } catch (error) {
-                console.error('Error submitting property:', error);
-                postError.value = error.message || 'An error occurred while submitting the property';
+                console.error('Error creating property:', error);
+                const errorMessage = error.response?.data?.detail || error.message || "Error creating property";
+                console.error('Error details:', errorMessage);
+                postError.value = errorMessage;
             }
-        };
-
-        const resetForm = () => {
-            newProperty.value = {
-                title: "",
-                city: "",
-                address: "",
-                price_per_night: "",
-                max_guests: "",
-                description: "",
-                category: ""
-            };
-            // Clean up preview URLs
-            imagePreviews.value.forEach(url => URL.revokeObjectURL(url));
-            selectedImages.value = [];
-            imagePreviews.value = [];
-            
-            // Reset the file input
-            const fileInput = document.getElementById('property-image');
-            if (fileInput) fileInput.value = '';
         };
 
         const viewPropertyDetail = async (propertyId) => {

@@ -163,8 +163,8 @@
           <div class="wishlist-info">
             <h3>{{ item.title || 'Untitled Property' }}</h3>
             <p class="price">
-              <i class="fas fa-euro-sign"></i>
-              {{ item.price_per_night || 0 }} per night
+              <i class="fas fa-money-bill-wave"></i>
+              {{ item.price_per_night || 0 }} DZ per night
             </p>
             <div class="actions">
               <router-link :to="{ name: 'property-details', params: { id: item.id }}" class="view-btn">

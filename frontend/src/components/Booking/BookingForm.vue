@@ -122,7 +122,7 @@
       @click="handleSubmit"
       :disabled="!isValidBooking || loading"
     >
-      <span v-if="!loading">Book Now - ${{ totalPrice }}</span>
+      <span v-if="!loading">Book Now - DZ{{ totalPrice }}</span>
       <span v-else>
         <i class="fas fa-spinner fa-spin"></i>
         Processing...

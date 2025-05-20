@@ -89,7 +89,7 @@
               class="pay-button"
               :disabled="!isFormValid || loading"
             >
-              {{ loading ? 'Processing...' : `Pay DZ${amount}` }}
+              {{ loading ? 'Processing...' : `Pay${amount}` }}
             </button>
           </form>
         </div>

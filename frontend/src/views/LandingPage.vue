@@ -35,7 +35,7 @@
               <p class="role">Frontend Developer</p>
               <p class="description">Lead developer specializing in Vue.js and Node.js</p>
               <div class="social-links">
-                <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                <a href="https://github.com/Nassim75h" class="social-link"><i class="fab fa-github"></i></a>
                 <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
               </div>
             </div>
@@ -47,7 +47,7 @@
               <p class="role">Backend Developer</p>
               <p class="description">Lead developer specializing in Django and Python, MySQL</p>
               <div class="social-links">
-                <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                <a href="https://gitlab.com/YacineBettir/Booking-restapi" class="social-link"><i class="fab fa-github"></i></a>
                 <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
               </div>
             </div>
